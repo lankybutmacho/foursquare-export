@@ -31,24 +31,20 @@ checkins.items.forEach(checkin => {
   }
 });
 
-const getVenues = async venueIds => {
-  const requests = venueIds.map(venueId => encodeURIComponent(`/venues/${venueId}`)).join(',');
+const getVenue = async venueId => {
   let response;
 
   try {
-    response = await axios.get(`${API_BASE_URL}/multi`, {
+    response = await axios.get(`${API_BASE_URL}/venues/${venueId}`, {
       params: {
         client_id: FOURSQUARE_CLIENT_ID,
         client_secret: FOURSQUARE_CLIENT_SECRET,
         v: '20190625',
-        requests,
       },
     });
-    return response.data.response.responses.map(r => {
-      r.response.venue;
-    });
+    return response.data.response.venue;
   } catch (error) {
-    console.error('Whoops, got an error from the Foursquare API:');
+    console.error('\nWhoops, got an error from the Foursquare API:');
     switch (error.response.status) {
       case 429:
         console.error(error.response.statusText);
@@ -65,19 +61,17 @@ const venueIds = Object.keys(venues);
 (async () => {
   while (venueIds.length > 0) {
     rl.write(`Remaining venues: ${venueIds.length}`);
-    const response = await getVenues(venueIds.splice(0, 10));
-    if (response === -1) break;
-    response.forEach(venue => {
-      if (venue != null && venue.id != null) {
-        venues[venue.id] = venue;
-      }
-    });
+    const venueId = venueIds.pop();
+    const response = await getVenue(venueId);
+
+    if (response === -1) return;
+
+    if (response != null) {
+      venues[venueId] = response;
+    }
 
     if (venueIds.length > 0) {
       readline.cursorTo(process.stdout, 0);
-      readline.clearLine();
-    } else {
-      readline.clearLine();
     }
   }
 
