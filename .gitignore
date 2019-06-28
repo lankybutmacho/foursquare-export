@@ -1,3 +1,5 @@
 config.js
 checkins.json
+checkins_with_venues.json
+venues.json
 node_modules
